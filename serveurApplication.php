@@ -22,7 +22,7 @@
         case "GET" :
             $posts = [];
             if (!empty($_GET['id'])){
-                $posts = getPosts($_GET['id']);
+                $posts = getPost($_GET['id']);
             }else{
                 $posts = getPosts();
             }
