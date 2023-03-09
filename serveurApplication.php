@@ -41,9 +41,6 @@
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
-            $tokenParts = explode('.', $jwt_token);
-            $payload = base64_decode($tokenParts[1]);
-            $roleUtilisateur = json_decode($payload)->role_utilisateur;
 
             /// Récupération de l'identifiant de la ressource envoyé par le Client
             if (!empty($_GET['id'])){
