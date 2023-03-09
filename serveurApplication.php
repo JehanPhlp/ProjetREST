@@ -20,8 +20,13 @@
     switch ($http_method){
 
         case "GET" :
-            $post=[];
-            
+            $posts = [];
+            if (!empty($_GET['id'])){
+                $posts = getPosts($_GET['id']);
+            }else{
+                $posts = getPosts();
+            }
+            deliver_response(200,"affichage de posts",$post)
             break;
         case "POST" :
             $postedData = file_get_contents('php://input');
@@ -64,5 +69,28 @@
             /// Mapping de la réponse au format JSON
             $json_response = json_encode($response);
             echo $json_response;
+        }
+
+        function getPosts(){
+            try {
+                $select = $linkpdo->prepare('SELECT * FROM post');
+                $select->execute();
+                $posts = $select->fetchAll(PDO::FETCH_ASSOC);
+                return $posts;
+            } catch(Exception $e) {
+                echo"erreur";
+                die('Erreur:'.$e->getMessage());
+            }
+        }
+        function getPosts($id){
+            try {
+                $select = $linkpdo->prepare('SELECT * FROM post WHERE id = ?');
+                $select->execute(array($id));
+                $post = $select->fetchAll(PDO::FETCH_ASSOC);
+                return $post;
+            } catch(Exception $e) {
+                echo"erreur";
+                die('Erreur:'.$e->getMessage());
+            }
         }
 ?>
