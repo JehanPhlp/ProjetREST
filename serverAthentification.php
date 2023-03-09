@@ -20,25 +20,25 @@
             /// Récupération des données envoyées par le Client
             $postedData = file_get_contents('php://input');
             $postedDataTab = json_decode($postedData, true);
-            $username = htmlentities($postedDataTab['username']);
-            $mdp = htmlentities($postedDataTab['mot_de_passe']);
+            $username = $postedDataTab['username'];
+            $mdp = $postedDataTab['mot_de_passe'];
 
-            $req = $linkpdo->prepare('SELECT role_utilisateur FROM Utilisateur WHERE Nom = ? and mot_de_passe = ?');
+            $req = $linkpdo->prepare('SELECT role_utilisateur FROM utilisateur WHERE nom = ? and mot_de_passe = ?');
             $req->execute(array($username, $mdp));
-            $reponseBD = $req->fetchAll();
+            $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
 
             //L'utilisateur n'a pas été trouvé dans la base de données
-            if(sizeof($reponseBD) == 0) {
+            if(count($reponseBD) == 0) {
                 deliver_response(404, "utilisateur introuvable dans la base de données", NULL);
+                break;
             }
 
-            $roleUtilisateur = $reponseBD['role_utilisateur'][0];
-
-            
+            $roleUtilisateur = $reponseBD[0];
 
             $header = array('alg'=>'HS256', 'typ'=>'JWT');
-            $payload = array('username'=>$username, 'mot_de_passe'=>$mdp, 'role_utilisateur'=>$roleUtilisateur)
-            generate_jwt();
+            $payload = array('username'=>$username, 'mot_de_passe'=>$mdp, 'role_utilisateur'=>$roleUtilisateur);
+            $jwt = generate_jwt($header, $payload);
+            deliver_response(200, "Authentification réussi !", $jwt);
             break;
         default :
             deliver_response(405, "méthode non supporté par le serveur", NULL);
