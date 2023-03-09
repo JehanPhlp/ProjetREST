@@ -55,6 +55,13 @@
             deliver_response(405, "Methode non implemenee", NULL);
             break;
         }
+
+        function get_role_utilisateur($jwt_token) {
+            $tokenParts = explode('.', $jwt_token);
+            $payload = base64_decode($tokenParts[1]);
+            $roleUtilisateur = json_decode($payload)->role_utilisateur;
+            return $roleUtilisateur;
+        }
     
         function deliver_response($status, $status_message, $data){
             /// Paramétrage de l'entête HTTP, suite
