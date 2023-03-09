@@ -26,7 +26,7 @@
             }else{
                 $posts = getPosts();
             }
-            deliver_response(200,"affichage de posts",$post)
+            deliver_response(200,"affichage de posts",$post);
             break;
         case "POST" :
             $postedData = file_get_contents('php://input');
