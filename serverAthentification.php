@@ -36,7 +36,7 @@
             $roleUtilisateur = $reponseBD[0];
 
             $header = array('alg'=>'HS256', 'typ'=>'JWT');
-            $payload = array('username'=>$username, 'mot_de_passe'=>$mdp, 'role_utilisateur'=>$roleUtilisateur);
+            $payload = array('username'=>$username, 'mot_de_passe'=>$mdp, 'role_utilisateur'=>$roleUtilisateur, 'exp'=>(time()+3600));
             $jwt = generate_jwt($header, $payload);
             deliver_response(200, "Authentification réussi !", $jwt);
             break;

@@ -12,6 +12,8 @@
     /// Paramétrage de l'entête HTTP (pour la réponse au Client)
     header("Content-Type:application/json");
 
+    $jwt_token = get_bearer_token();
+
     /// Identification du type de méthode HTTP envoyée par le client
     $http_method = $_SERVER['REQUEST_METHOD'];
 
@@ -30,7 +32,22 @@
 
             break;
         case "DELETE":
+            if(!is_jwt_valid($jwt_token)) {
+                deliver_response(401, "token invalide", NULL);
+                break;
+            }
+            $tokenParts = explode('.', $jwt_token);
+            $payload = base64_decode($tokenParts[1]);
+            $roleUtilisateur = json_decode($payload)->role_utilisateur;
 
+            /// Récupération de l'identifiant de la ressource envoyé par le Client
+            if (!empty($_GET['id'])){
+            /// Traitement
+                $req = $linkpdo->prepare('DELETE from chuckn_facts where id = ?');
+                $req->execute(array($_GET['id']));
+            }
+            /// Envoi de la réponse au Client
+            deliver_response(200, "Votre message", NULL);
             break;
         default :
             deliver_response(405, "Methode non implemenee", NULL);
