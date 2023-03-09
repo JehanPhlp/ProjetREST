@@ -79,7 +79,7 @@
                 die('Erreur:'.$e->getMessage());
             }
         }
-        function getPosts($id){
+        function getPost($id){
             try {
                 $select = $linkpdo->prepare('SELECT * FROM post WHERE id = ?');
                 $select->execute(array($id));
