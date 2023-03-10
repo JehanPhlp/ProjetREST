@@ -37,13 +37,17 @@
 
             break;
         case "DELETE":
+            if (empty($_GET['id_post'])){
+                deliver_response(422, "missing parameter : id_post", NULL);
+            }
             if(!is_jwt_valid($jwt_token)) {
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
+            if(is_moderateur($jwt_token) || is_publisher_of_this_post($jwt_token, ))
 
             /// Récupération de l'identifiant de la ressource envoyé par le Client
-            if (!empty($_GET['id'])){
+            if (!empty($_GET['id_post'])){
             /// Traitement
                 $req = $linkpdo->prepare('DELETE from chuckn_facts where id = ?');
                 $req->execute(array($_GET['id']));
@@ -54,6 +58,29 @@
         default :
             deliver_response(405, "Methode non implemenee", NULL);
             break;
+        }
+
+        function is_moderateur($jwt_token) {
+            return get_role_utilisateur() == 'moderator';
+        }
+
+        function is_publisher($jwt_token) {
+            return get_role_utilisateur() == "publisher";
+        }
+
+        function is_publisher_of_this_post($jwt_token, $id_post) {
+            if(!is_publisher) {
+                return false;
+            }
+            $tokenParts = explode('.', $jwt_token);
+            $payload = base64_decode($tokenParts[1]);
+            $username = json_decode($payload)->username;
+
+            $req = $linkpdo->prepare('SELECT p.id_utilisateur FROM utilisateur u, post p WHERE u.id_utilisateur = p.id_utilisateur AND u.nom = ? AND p.id_post = ?');
+            $req->execute(array($username, $id_post));
+            $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
+
+            return(count($reponseBD) > 0);
         }
 
         function get_role_utilisateur($jwt_token) {
