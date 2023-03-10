@@ -66,80 +66,83 @@
         default :
             deliver_response(405, "Methode non implemenee", NULL);
             break;
-        }
+    }
 
-        function is_moderateur($jwt_token) {
-            return get_role_utilisateur() == 'moderator';
-        }
+    function is_moderateur($jwt_token) {
+        return get_role_utilisateur() == 'moderator';
+    }
 
-        function is_publisher($jwt_token) {
-            return get_role_utilisateur() == "publisher";
-        }
+    function is_publisher($jwt_token) {
+        return get_role_utilisateur() == "publisher";
+    }
 
-        function is_publisher_of_this_post($jwt_token, $id_post) {
-            if(!is_publisher) {
-                return false;
-            }
-            $tokenParts = explode('.', $jwt_token);
-            $payload = base64_decode($tokenParts[1]);
-            $username = json_decode($payload)->username;
+    function is_publisher_of_this_post($jwt_token, $id_post) {
+        if(!is_publisher) {
+            return false;
+        }
+        $tokenParts = explode('.', $jwt_token);
+        $payload = base64_decode($tokenParts[1]);
+        $username = json_decode($payload)->username;
 
-            $req = $linkpdo->prepare('SELECT p.id_utilisateur FROM utilisateur u, post p WHERE u.id_utilisateur = p.id_utilisateur AND u.nom = ? AND p.id_post = ?');
-            $req->execute(array($username, $id_post));
-            $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
+        $req = $linkpdo->prepare('SELECT p.id_utilisateur FROM utilisateur u, post p WHERE u.id_utilisateur = p.id_utilisateur AND u.nom = ? AND p.id_post = ?');
+        $req->execute(array($username, $id_post));
+        $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
 
-            return(count($reponseBD) > 0);
-        }
+        return(count($reponseBD) > 0);
+    }
 
-        function get_role_utilisateur($jwt_token) {
-            $tokenParts = explode('.', $jwt_token);
-            $payload = base64_decode($tokenParts[1]);
-            $roleUtilisateur = json_decode($payload)->role_utilisateur;
-            return $roleUtilisateur;
-        }
-    
-        function deliver_response($status, $status_message, $data){
-            /// Paramétrage de l'entête HTTP, suite
-            header("HTTP/1.1 $status $status_message");
-            /// Paramétrage de la réponse retournée
-            $response['status'] = $status;
-            $response['status_message'] = $status_message;
-            $response['data'] = $data;
-            /// Mapping de la réponse au format JSON
-            $json_response = json_encode($response);
-            echo $json_response;
-        }
+    function get_role_utilisateur($jwt_token) {
+        $tokenParts = explode('.', $jwt_token);
+        $payload = base64_decode($tokenParts[1]);
+        $roleUtilisateur = json_decode($payload)->role_utilisateur;
+        return $roleUtilisateur;
+    }
 
-        function getPosts(){
-            try {
-                $select = $linkpdo->prepare('SELECT * FROM post');
-                $select->execute();
-                $posts = $select->fetchAll(PDO::FETCH_ASSOC);
-                return $posts;
-            } catch(Exception $e) {
-                echo"erreur";
-                die('Erreur:'.$e->getMessage());
-            }
+    function deliver_response($status, $status_message, $data){
+        /// Paramétrage de l'entête HTTP, suite
+        header("HTTP/1.1 $status $status_message");
+        /// Paramétrage de la réponse retournée
+        $response['status'] = $status;
+        $response['status_message'] = $status_message;
+        $response['data'] = $data;
+        /// Mapping de la réponse au format JSON
+        $json_response = json_encode($response);
+        echo $json_response;
+    }
+
+    function getPosts(){
+        try {
+            $select = $linkpdo->prepare('SELECT * FROM post');
+            $select->execute();
+            $posts = $select->fetchAll(PDO::FETCH_ASSOC);
+            return $posts;
+        } catch(Exception $e) {
+            echo"erreur";
+            die('Erreur:'.$e->getMessage());
         }
-        function getPost($id){
-            try {
-                $select = $linkpdo->prepare('SELECT * FROM post WHERE id = ?');
-                $select->execute(array($id));
-                $post = $select->fetchAll(PDO::FETCH_ASSOC);
-                return $post;
-            } catch(Exception $e) {
-                echo"erreur";
-                die('Erreur:'.$e->getMessage());
-            }
+    }
+
+    function getPost($id){
+        try {
+            $select = $linkpdo->prepare('SELECT * FROM post WHERE id = ?');
+            $select->execute(array($id));
+            $post = $select->fetchAll(PDO::FETCH_ASSOC);
+            return $post;
+        } catch(Exception $e) {
+            echo"erreur";
+            die('Erreur:'.$e->getMessage());
         }
-        function getPostFromUser($username){
+    }
+
+    function getPostFromUser($username){
+        try{
             $select = $linkpdo->prepare('SELECT * FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
-                $select->execute(array($username));
-                $posts = $select->fetchAll(PDO::FETCH_ASSOC);
-                return $posts;
-            } catch(Exception $e) {
-                echo"erreur";
-                die('Erreur:'.$e->getMessage());
-            }
+            $select->execute(array($username));
+            $posts = $select->fetchAll(PDO::FETCH_ASSOC);
+            return $posts;
+        } catch(Exception $e) {
+            echo"erreur";
+            die('Erreur:'.$e->getMessage());
         }
+    }
 ?>
