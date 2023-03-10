@@ -21,16 +21,24 @@
 
         case "GET" :
             $posts = [];
+            if (!empty($_GET['username'])){
+                $posts = getPostFromUser($_GET['username']);
+            }
             if (!empty($_GET['id'])){
                 $posts = getPost($_GET['id']);
-            }else{
+            }
+            else{
                 $posts = getPosts();
             }
             deliver_response(200,"affichage de posts",$post);
             break;
         case "POST" :
             $postedData = file_get_contents('php://input');
-
+            if(!is_jwt_valid($jwt_token)) {
+                deliver_response(401, "token invalide", NULL);
+                break;
+            }
+            
             break;
         case "PUT" :
             $postedData = file_get_contents('php://input');
@@ -119,6 +127,16 @@
                 $select->execute(array($id));
                 $post = $select->fetchAll(PDO::FETCH_ASSOC);
                 return $post;
+            } catch(Exception $e) {
+                echo"erreur";
+                die('Erreur:'.$e->getMessage());
+            }
+        }
+        function getPostFromUser($username){
+            $select = $linkpdo->prepare('SELECT * FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
+                $select->execute(array($username));
+                $posts = $select->fetchAll(PDO::FETCH_ASSOC);
+                return $posts;
             } catch(Exception $e) {
                 echo"erreur";
                 die('Erreur:'.$e->getMessage());
