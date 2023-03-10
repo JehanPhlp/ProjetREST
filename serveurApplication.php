@@ -168,8 +168,8 @@
 
     function creatPost($username,$contenu){
         try {
-            $req = createDB()->prepare('INSERT INTO post(contenu,date_publication,Id_Utilisateur) values(?,?,?)');
-            $req->execute(array($contenu ,time(),getIdUserFromUsername($username)));
+            $req = createDB()->prepare('INSERT INTO post(contenu,Id_Utilisateur) values(?,?)');
+            $req->execute(array($contenu,getIdUserFromUsername($username)));
         } catch(Exception $e) {
             echo"erreur";
             die('Erreur:'.$e->getMessage());
@@ -179,8 +179,8 @@
         try{
             $select = createDB()->prepare('SELECT Id_Utilisateur FROM utilisateur as u WHERE u.nom=?');
             $select->execute(array($username));
-            $posts = $select->fetchAll(PDO::FETCH_ASSOC);
-            return $posts;
+            $id = $select->fetchColumn();
+            return intval($id['Id_Utilisateur']);
         } catch(Exception $e) {
             echo"erreur";
             die('Erreur:'.$e->getMessage());
