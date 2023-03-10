@@ -23,11 +23,9 @@
             $posts = [];
             if (!empty($_GET['username'])){
                 $posts = getPostFromUser($_GET['username']);
-            }
-            if (!empty($_GET['id'])){
+            } else if (!empty($_GET['id'])){
                 $posts = getPost($_GET['id']);
-            }
-            else{
+            } else {
                 $posts = getPosts();
             }
             deliver_response(200,"affichage de posts",$post);
@@ -52,16 +50,15 @@
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
-            if(is_moderateur($jwt_token) || is_publisher_of_this_post($jwt_token, ))
+            if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
+                deliver_response(401, "vous n'etes pas autorisé à supprimer ce post");
+            }            
 
-            /// Récupération de l'identifiant de la ressource envoyé par le Client
-            if (!empty($_GET['id_post'])){
-            /// Traitement
-                $req = $linkpdo->prepare('DELETE from chuckn_facts where id = ?');
-                $req->execute(array($_GET['id']));
-            }
+            $req = $linkpdo->prepare('DELETE from post where id_Post = ?');
+            $req->execute(array($_GET['id_post']));
+        
             /// Envoi de la réponse au Client
-            deliver_response(200, "Votre message", NULL);
+            deliver_response(200, "Post correctement supprimé", NULL);
             break;
         default :
             deliver_response(405, "Methode non implemenee", NULL);

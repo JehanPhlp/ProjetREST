@@ -24,7 +24,7 @@
             $mdp = $postedDataTab['mot_de_passe'];
 
             $req = $linkpdo->prepare('SELECT role_utilisateur FROM utilisateur WHERE nom = ? and mot_de_passe = ?');
-            $req->execute(array($username, $mdp));
+            $req->execute(array($username, hash("sha256",$mdp)));
             $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
 
             //L'utilisateur n'a pas été trouvé dans la base de données
