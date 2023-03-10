@@ -35,10 +35,11 @@
         case "POST" :
             $postedData = file_get_contents('php://input');
             if(!is_jwt_valid($jwt_token)) {
-                deliver_response(401, "token invalide", NULL);
+                deliver_response(401, "Identification requise", NULL);
                 break;
             }
-            
+            creatPost(get_username($jwt_token),json_decode($postedData, true)['contenu']);
+            deliver_response(201, "post cree", NULL);
             break;
         case "PUT" :
             $postedData = file_get_contents('php://input');
@@ -98,6 +99,13 @@
         return $roleUtilisateur;
     }
 
+    function get_username($jwt_token) {
+        $tokenParts = explode('.', $jwt_token);
+        $payload = base64_decode($tokenParts[1]);
+        $nomUtilisateur = json_decode($payload)->username;
+        return $nomUtilisateur;
+    }
+
     function deliver_response($status, $status_message, $data){
         /// Paramétrage de l'entête HTTP, suite
         header("HTTP/1.1 $status $status_message");
@@ -137,6 +145,27 @@
     function getPostFromUser($username){
         try{
             $select = $linkpdo->prepare('SELECT * FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
+            $select->execute(array($username));
+            $posts = $select->fetchAll(PDO::FETCH_ASSOC);
+            return $posts;
+        } catch(Exception $e) {
+            echo"erreur";
+            die('Erreur:'.$e->getMessage());
+        }
+    }
+
+    function creatPost($username,$contenue){
+        try {
+            $req = $linkpdo->prepare('INSERT INTO post(contenu,date_publication,Id_Utilisateur) values(?,?,?)');
+            $req->execute(array($contenue),time(),getIdUserFromUsername($username));
+        } catch(Exception $e) {
+            echo"erreur";
+            die('Erreur:'.$e->getMessage());
+        }
+    }
+    function getIdUserFromUsername($username){
+        try{
+            $select = $linkpdo->prepare('SELECT Id_Utilisateur FROM utilisateur as u WHERE u.nom=?');
             $select->execute(array($username));
             $posts = $select->fetchAll(PDO::FETCH_ASSOC);
             return $posts;
