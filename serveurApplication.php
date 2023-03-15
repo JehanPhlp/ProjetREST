@@ -53,15 +53,17 @@
 
             break;
         case "DELETE":
-            if (empty($_GET['id_post'])){
-                deliver_response(422, "missing parameter : id_post", NULL);
-            }
             if(!is_jwt_valid($jwt_token)) {
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
+            if (empty($_GET['id_post'])){
+                deliver_response(422, "missing parameter : id_post", NULL);
+                break;
+            }
             if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
-                deliver_response(401, "vous n'etes pas autorisé à supprimer ce post");
+                deliver_response(401, "vous n'etes pas autorisé à supprimer ce post",null);
+                break;
             }            
 
             $req = createDB()->prepare('DELETE from post where id_Post = ?');
@@ -76,15 +78,15 @@
     }
 
     function is_moderateur($jwt_token) {
-        return get_role_utilisateur() == 'moderator';
+        return get_role_utilisateur($jwt_token) == 'moderator';
     }
 
     function is_publisher($jwt_token) {
-        return get_role_utilisateur() == "publisher";
+        return get_role_utilisateur($jwt_token) == "publisher";
     }
 
     function is_publisher_of_this_post($jwt_token, $id_post) {
-        if(!is_publisher) {
+        if(!is_publisher($jwt_token)) {
             return false;
         }
         $tokenParts = explode('.', $jwt_token);
