@@ -22,7 +22,6 @@
             } else {
                 $posts = getPosts();
             }
-            deliver_response(200,$_GET['username'],$posts);
             deliver_response(200,"affichage de posts",$posts);
             break;
         case "POST" :
