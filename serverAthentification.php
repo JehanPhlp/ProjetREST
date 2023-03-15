@@ -1,4 +1,9 @@
 <?php
+    /**
+     * Login moderator : moderator_user     moderator_mdp
+     * Login publisher : publisher_user     publisher_mdp
+     */
+
     require_once("login.php");
     require("jwt_utils.php");
 
