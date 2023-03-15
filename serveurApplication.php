@@ -22,6 +22,7 @@
             } else {
                 $posts = getPosts();
             }
+            deliver_response(200,$_GET['username'],$posts);
             deliver_response(200,"affichage de posts",$posts);
             break;
         case "POST" :
@@ -156,7 +157,7 @@
 
     function getPostFromUser($username){
         try{
-            $select = createDB()->prepare('SELECT Id_Post,post.Id_Utilisateur,contenu,date_publication FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom="aaa"');
+            $select = createDB()->prepare('SELECT Id_Post,post.Id_Utilisateur,contenu,date_publication FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
             $select->execute(array($username));
             $posts = $select->fetchAll(PDO::FETCH_ASSOC);
             return $posts;
