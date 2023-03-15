@@ -144,7 +144,7 @@
 
     function getPost($id){
         try {
-            $select = createDB()->prepare('SELECT * FROM post WHERE id = ?');
+            $select = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
             $select->execute(array($id));
             $post = $select->fetchAll(PDO::FETCH_ASSOC);
             return $post;
