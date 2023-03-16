@@ -177,7 +177,10 @@
     function get_role_utilisateur($jwt_token) {
         $tokenParts = explode('.', $jwt_token);
         $payload = base64_decode($tokenParts[1]);
-        $roleUtilisateur = json_decode($payload)->role_utilisateur;
+        $decodedPayload = json_decode($payload, true);
+        $roleUtilisateur = $decodedPayload['role_utilisateur'];
+        deliver_response(200,$roleUtilisateur,$roleUtilisateur);
+
         return $roleUtilisateur;
     }
 
