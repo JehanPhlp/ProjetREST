@@ -21,7 +21,7 @@
                 }
                 $posts = getPostFromUser($_GET['username'],$jwt_token);
             } else if (!empty($_GET['id'])){
-                $posts = getPost($_GET['id']);
+                $posts = getPost($_GET['id'],$jwt_token);
             } else {
                 $posts = getPosts($jwt_token);
             }
@@ -165,7 +165,7 @@
         $username = json_decode($payload)->username;
         
         try {
-            $req = createDB()->prepare('SELECT p.id_utilisateur FROM utilisateur u, post p WHERE u.id_utilisateur = p.id_utilisateur AND u.nom = ? AND p.id_post = ?');
+            $req = createDB()->prepare('SELECT p.id_utilisateur FROM utilisateur u, post p WHERE u.id_utilisateur = p.id_utilisateur AND u.nom = ? AND p.Id_Post = ?');
             $req->execute(array($username, $id_post));
             $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
         }
@@ -209,24 +209,24 @@
     function getPosts($jwt_token){
         try {
             if(is_moderateur($jwt_token)){
-            $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication,
+            $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                             COUNT(l.Id_Post) AS likes, GROUP_CONCAT(DISTINCT ul.nom) AS users_likes,
                                             COUNT(d.Id_Post) AS dislikes, GROUP_CONCAT(DISTINCT ud.nom) AS users_dislikes
                                             FROM post p
-                                            LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                            LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                             LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
-                                            LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                            LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
                                             LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
-                                            GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
+                                            GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
             }
             else if(is_publisher($jwt_token)){
-                $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date,
+                $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date,
                                                 COUNT(l.Id_Post) AS likes,
                                                 COUNT(d.Id_Post) AS dislikes
                                                 FROM post p
-                                                LEFT JOIN liker l ON p.Id_post = l.Id_Post
-                                                LEFT JOIN disliker d ON p.Id_post = d.Id_Post
-                                                GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date;');
+                                                LEFT JOIN liker l ON p.Id_Post = l.Id_Post
+                                                LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
+                                                GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date;');
             }
             else{
                 $select = createDB()->prepare('SELECT * from post');
@@ -243,29 +243,29 @@
     function getPost($id,$jwt_token){
         try {
             if(is_moderateur($jwt_token)){
-                $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication,
+                $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                                 COUNT(l.Id_Post) AS likes, GROUP_CONCAT(DISTINCT ul.nom) AS users_likes,
                                                 COUNT(d.Id_Post) AS dislikes, GROUP_CONCAT(DISTINCT ud.nom) AS users_dislikes
                                                 FROM post p
-                                                LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                 LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
-                                                LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
                                                 LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
-                                                WHERE Id_Post = ?
-                                                GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
+                                                WHERE p.Id_Post = ?
+                                                GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else if(is_publisher($jwt_token)){
-                    $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date,
+                    $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date,
                                                     COUNT(l.Id_Post) AS likes,
                                                     COUNT(d.Id_Post) AS dislikes
                                                     FROM post p
-                                                    LEFT JOIN liker l ON p.Id_post = l.Id_Post
-                                                    LEFT JOIN disliker d ON p.Id_post = d.Id_Post
-                                                    WHERE Id_Post = ?
-                                                    GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date;');
+                                                    LEFT JOIN liker l ON p.Id_Post = l.Id_Post
+                                                    LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
+                                                    WHERE p.Id_Post = ?
+                                                    GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date;');
                 }
                 else{
-                    $select = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
+                    $select = createDB()->prepare('SELECT * FROM post WHERE post.Id_Post = ?');
                 }
             $select->execute(array($id));
             $post = $select->fetchAll(PDO::FETCH_ASSOC);
@@ -287,18 +287,18 @@
                                                 LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
                                                 LEFT JOIN disliker d ON p.Id_post = d.Id_Post
                                                 LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
-                                                WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?
+                                                JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
                                                 GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else if(is_publisher($jwt_token)){
-                    $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date,
+                    $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date,
                                                     COUNT(l.Id_Post) AS likes,
                                                     COUNT(d.Id_Post) AS dislikes
-                                                    FROM post p
-                                                    LEFT JOIN liker l ON p.Id_post = l.Id_Post
-                                                    LEFT JOIN disliker d ON p.Id_post = d.Id_Post
-                                                    WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?
-                                                    GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date;');
+                                                    FROM post p,utilisateur
+                                                    LEFT JOIN liker l ON p.Id_Post = l.Id_Post
+                                                    LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
+                                                    JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
+                                                    GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date;');
                 }
                 else{
                     $select = createDB()->prepare('SELECT Id_Post,post.Id_Utilisateur,contenu,date_publication FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
