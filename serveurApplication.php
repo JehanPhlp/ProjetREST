@@ -36,19 +36,32 @@
         case "PUT" :
             $postedData = file_get_contents('php://input');
             $postedDataTab = json_decode($postedData, true);
-            if (empty($_GET['id_post'])){
-                deliver_response(422, "missing parameter : id_post", NULL);
-            }
             if(!is_jwt_valid($jwt_token)) {
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
-            if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
-                deliver_response(401, "vous n'etes pas autorisé à supprimer ce post");
+            if (empty($_GET['id_post'])){
+                deliver_response(422, "missing parameter : id_post", NULL);
             }
-            if(isVide($postedDataTab['contenu'])) {
-                deliver_response(384, "contenu article vide", NULL);
-                break;
+            if (!idPostExist($_GET['id_post'])) {
+                deliver_response(404, "Ce post n'existe pas", NULL);
+            }
+            
+            if(!empty($_GET["like"]) && ($_GET["like"] != 1 || $_GET[""] != -1)) {
+                deliver_response(422, "wrong parameter : like = (1:like / -1:dislike)");
+            } else if (!empty($_GET["like"])) {
+                if(!is_publisher($jwt_token)) {
+                    deliver_response(401, "Vous n'etes pas autorisé à liker ce post", NULL);
+                    break;
+                }
+                if(is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
+                    deliver_response(401, "vous ne pouvez pas liker votre propre post");
+                }
+                if($_GET["like"] == 1) {
+                    likerUnPost($_GET["id_post"], $jwt_token);
+                } else {
+                    dislikerUnPost($_GET["id_post"], $jwt_token);
+                }
             }
 
             break;
@@ -83,6 +96,61 @@
 
     function is_publisher($jwt_token) {
         return get_role_utilisateur($jwt_token) == "publisher";
+    }
+
+    function likerUnPost($id_post, $jwt_token) {
+        $id_utilisateur = getIdUserFromUsername(get_username($jwt_token));
+        if(estDejaLikeOuDislike($id_utilisateur, $id_post)) {
+            deliver_response(405, "Vous avez déja liker ou diliker ce post", NULL);
+        } else {
+            try {
+                $req = createDB()->prepare('INSERT INTO liker (Id_Utilisateur, Id_Post) VALUES (?, ?)');
+                $req->execute(array($id_utilisateur, $id_post));
+            }
+            catch (Exception $e) {
+                die('Erreur : ' . $e->getMessage());
+            }
+        }
+    }
+
+    function idPostExist($id_post) {
+        $req = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
+        $req->execute(array($id_post));
+        $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
+
+        return (count($reponseBD) != 0);
+    }
+
+    function estDejaLikeOuDislike($id_utilisateur, $id_post) {
+        try {
+            $req = createDB()->prepare('SELECT * FROM liker WHERE Id_Utilisateur = ? AND Id_Post = ?');
+            $req->execute(array($id_utilisateur, $id_post));
+            $reponseBDLike = $req->fetchAll(PDO::FETCH_ASSOC);
+
+            $req = createDB()->prepare('SELECT * FROM disliker WHERE Id_Utilisateur = ? AND Id_Post = ?');
+            $req->execute(array($id_utilisateur, $id_post));
+            $reponseBDDislike = $req->fetchAll(PDO::FETCH_ASSOC);
+
+            return(count($reponseBDDislike) != 0 || count($reponseBDLike) != 0);
+        } 
+        catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
+    }
+
+    function dislikerUnPost($id_post, $jwt_token) {
+        $id_utilisateur = getIdUserFromUsername(get_username($jwt_token));
+        if(estDejaLikeOuDislike($id_utilisateur, $id_post)) {
+            deliver_response(405, "Vous avez déja liker ou diliker ce post", NULL);
+        } else {
+            try {
+                $req = createDB()->prepare('INSERT INTO disliker (Id_Utilisateur, Id_Post) VALUES (?, ?)');
+                $req->execute(array($id_utilisateur, $id_post));
+            }
+            catch (Exception $e) {
+                die('Erreur : ' . $e->getMessage());
+            }
+        }
     }
 
     function is_publisher_of_this_post($jwt_token, $id_post) {
