@@ -28,6 +28,7 @@
             deliver_response(200,"affichage de posts",$posts);
             break;
         case "POST" :
+            //Creer un post
             $postedData = file_get_contents('php://input');
             if(!is_jwt_valid($jwt_token)) {
                 deliver_response(401, "Identification requise", NULL);
@@ -43,32 +44,52 @@
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
-            if (empty($_GET['id_post'])){
+
+            // Verificationde l'id du post
+            if (empty($postedDataTab['id_post'])){
                 deliver_response(422, "missing parameter : id_post", NULL);
+                break;
             }
-            if (!idPostExist($_GET['id_post'])) {
+            if (!idPostExist($postedDataTab['id_post'])) {
                 deliver_response(404, "Ce post n'existe pas", NULL);
+                break;
             }
             
-            if(!empty($_GET["like"]) && ($_GET["like"] != 1 || $_GET[""] != -1)) {
+            //procedure pour liker ou disliker un post
+            if(!empty($postedDataTab["like"]) && ($postedDataTab["like"] != 1 || $postedDataTab[""] != -1)) {
                 deliver_response(422, "wrong parameter : like = (1:like / -1:dislike)");
-            } else if (!empty($_GET["like"])) {
+                break;
+            } else if (!empty($postedDataTab["like"])) {
                 if(!is_publisher($jwt_token)) {
                     deliver_response(401, "Vous n'etes pas autorisé à liker ce post", NULL);
                     break;
                 }
-                if(is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
+                if(is_publisher_of_this_post($jwt_token, $postedDataTab['id_post'])) {
                     deliver_response(401, "vous ne pouvez pas liker votre propre post");
+                    break;
                 }
-                if($_GET["like"] == 1) {
-                    likerUnPost($_GET["id_post"], $jwt_token);
+                if($postedDataTab["like"] == 1) {
+                    likerUnPost($postedDataTab["id_post"], $jwt_token);
+                    deliver_response(200, "post liké !", NULL);
                 } else {
-                    dislikerUnPost($_GET["id_post"], $jwt_token);
+                    dislikerUnPost($postedDataTab["id_post"], $jwt_token);
+                    deliver_response(200, "post disliké !", NULL);
                 }
+                break;
+            }
+
+            //modifier le contenu d'un post
+            if(!empty($postedDataTab["contenu"])) {
+                if(!is_publisher_of_this_post($jwt_token, $postedDataTab['id_post']) || !is_moderateur($jwt_token)) {
+                    deliver_response(401, "Vous n'etes pas autorisé à modifier ce post");
+                    break;
+                }
+
             }
 
             break;
         case "DELETE":
+            //Supprimer un post
             if(!is_jwt_valid($jwt_token)) {
                 deliver_response(401, "token invalide", NULL);
                 break;
@@ -77,15 +98,19 @@
                 deliver_response(422, "missing parameter : id_post", NULL);
                 break;
             }
+            if (!idPostExist($postedDataTab['id_post'])) {
+                deliver_response(404, "Ce post n'existe pas", NULL);
+                break;
+            }
             if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
                 deliver_response(401, "vous n'etes pas autorisé à supprimer ce post",null);
                 break;
             }            
 
+            //suppression du post
             $req = createDB()->prepare('DELETE from post where id_Post = ?');
             $req->execute(array($_GET['id_post']));
         
-            /// Envoi de la réponse au Client
             deliver_response(200, "Post correctement supprimé", NULL);
             break;
         default :
