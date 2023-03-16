@@ -16,11 +16,14 @@
         case "GET" :
             $posts = [];
             if (!empty($_GET['username'])){
-                $posts = getPostFromUser($_GET['username']);
+                if (is_jwt_valid($jwt_token) && $_GET['username']==get_username($jwt_token)){
+                    $posts = getPostFromUser($_GET['username'],$jwt_token);
+                }
+                $posts = getPostFromUser($_GET['username'],$jwt_token);
             } else if (!empty($_GET['id'])){
                 $posts = getPost($_GET['id']);
             } else {
-                $posts = getPosts();
+                $posts = getPosts($jwt_token);
             }
             deliver_response(200,"affichage de posts",$posts);
             break;
@@ -135,9 +138,31 @@
         echo $json_response;
     }
 
-    function getPosts(){
+    function getPosts($jwt_token){
         try {
-            $select = createDB()->prepare('SELECT * FROM post');
+            if(is_moderateur($jwt_token)){
+            $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication,
+                                            COUNT(l.Id_Post) AS likes, GROUP_CONCAT(DISTINCT ul.nom) AS users_likes,
+                                            COUNT(d.Id_Post) AS dislikes, GROUP_CONCAT(DISTINCT ud.nom) AS users_dislikes
+                                            FROM post p
+                                            LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                            LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
+                                            LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                            LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
+                                            GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
+            }
+            else if(is_publisher($jwt_token)){
+                $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date,
+                                                COUNT(l.Id_Post) AS likes,
+                                                COUNT(d.Id_Post) AS dislikes
+                                                FROM post p
+                                                LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date;');
+            }
+            else{
+                $select = createDB()->prepare('SELECT * from post');
+            }
             $select->execute();
             $posts = $select->fetchAll(PDO::FETCH_ASSOC);
             return $posts;
@@ -147,9 +172,33 @@
         }
     }
 
-    function getPost($id){
+    function getPost($id,$jwt_token){
         try {
-            $select = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
+            if(is_moderateur($jwt_token)){
+                $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication,
+                                                COUNT(l.Id_Post) AS likes, GROUP_CONCAT(DISTINCT ul.nom) AS users_likes,
+                                                COUNT(d.Id_Post) AS dislikes, GROUP_CONCAT(DISTINCT ud.nom) AS users_dislikes
+                                                FROM post p
+                                                LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
+                                                LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
+                                                WHERE Id_Post = ?
+                                                GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
+                }
+                else if(is_publisher($jwt_token)){
+                    $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date,
+                                                    COUNT(l.Id_Post) AS likes,
+                                                    COUNT(d.Id_Post) AS dislikes
+                                                    FROM post p
+                                                    LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                    LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                    WHERE Id_Post = ?
+                                                    GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date;');
+                }
+                else{
+                    $select = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
+                }
             $select->execute(array($id));
             $post = $select->fetchAll(PDO::FETCH_ASSOC);
             return $post;
@@ -159,9 +208,33 @@
         }
     }
 
-    function getPostFromUser($username){
+    function getPostFromUser($username,$jwt_token){
         try{
-            $select = createDB()->prepare('SELECT Id_Post,post.Id_Utilisateur,contenu,date_publication FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
+            if(is_moderateur($jwt_token)){
+                $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication,
+                                                COUNT(l.Id_Post) AS likes, GROUP_CONCAT(DISTINCT ul.nom) AS users_likes,
+                                                COUNT(d.Id_Post) AS dislikes, GROUP_CONCAT(DISTINCT ud.nom) AS users_dislikes
+                                                FROM post p
+                                                LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
+                                                LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
+                                                WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?
+                                                GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
+                }
+                else if(is_publisher($jwt_token)){
+                    $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date,
+                                                    COUNT(l.Id_Post) AS likes,
+                                                    COUNT(d.Id_Post) AS dislikes
+                                                    FROM post p
+                                                    LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                    LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                    WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?
+                                                    GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date;');
+                }
+                else{
+                    $select = createDB()->prepare('SELECT Id_Post,post.Id_Utilisateur,contenu,date_publication FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
+                }
             $select->execute(array($username));
             $posts = $select->fetchAll(PDO::FETCH_ASSOC);
             return $posts;
@@ -170,6 +243,7 @@
             die('Erreur:'.$e->getMessage());
         }
     }
+    
 
     function creatPost($username,$contenu){
         try {
