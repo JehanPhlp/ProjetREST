@@ -274,13 +274,13 @@
                                             GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
             }
             else if(is_publisher($jwt_token)){
-                $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date,
+                $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                                 COUNT(l.Id_Post) AS likes,
                                                 COUNT(d.Id_Post) AS dislikes
                                                 FROM post p
                                                 LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                 LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
-                                                GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date;');
+                                                GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
             }
             else{
                 $select = createDB()->prepare('SELECT * from post');
@@ -305,18 +305,18 @@
                                                 LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
                                                 LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
                                                 LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
-                                                WHERE p.Id_Post = ?
+                                                JOIN post p ON p.Id_Post = ?
                                                 GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else if(is_publisher($jwt_token)){
-                    $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date,
+                    $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                                     COUNT(l.Id_Post) AS likes,
                                                     COUNT(d.Id_Post) AS dislikes
                                                     FROM post p
                                                     LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                     LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
-                                                    WHERE p.Id_Post = ?
-                                                    GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date;');
+                                                    JOIN post p ON p.Id_Post = ?
+                                                    GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else{
                     $select = createDB()->prepare('SELECT * FROM post WHERE post.Id_Post = ?');
@@ -345,14 +345,14 @@
                                                 GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else if(is_publisher($jwt_token)){
-                    $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date,
+                    $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                                     COUNT(l.Id_Post) AS likes,
                                                     COUNT(d.Id_Post) AS dislikes
                                                     FROM post p,utilisateur
                                                     LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                     LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
                                                     JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
-                                                    GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date;');
+                                                    GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else{
                     $select = createDB()->prepare('SELECT Id_Post,post.Id_Utilisateur,contenu,date_publication FROM post,utilisateur as u WHERE post.Id_Utilisateur=u.Id_Utilisateur and u.nom=?');
