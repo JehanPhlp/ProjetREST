@@ -54,10 +54,13 @@
                 deliver_response(404, "Ce post n'existe pas", NULL);
                 break;
             }
-            
+            if (empty($postedDataTab["like"]) && empty($postedDataTab["contenu"])) {
+                deliver_response(422, "missing parameter : like or contenu", NULL);
+            }
+
             //procedure pour liker ou disliker un post
-            if(!empty($postedDataTab["like"]) && ($postedDataTab["like"] != 1 || $postedDataTab[""] != -1)) {
-                deliver_response(422, "wrong parameter : like = (1:like / -1:dislike)");
+            if(!empty($postedDataTab["like"]) && $postedDataTab["like"] != "1" && $postedDataTab["like"] != "-1") {
+                deliver_response(422, "wrong parameter : like = (1:like / -1:dislike)".$postedDataTab["like"], NULL);
                 break;
             } else if (!empty($postedDataTab["like"])) {
                 if(!is_publisher($jwt_token)) {
@@ -65,26 +68,35 @@
                     break;
                 }
                 if(is_publisher_of_this_post($jwt_token, $postedDataTab['id_post'])) {
-                    deliver_response(401, "vous ne pouvez pas liker votre propre post");
+                    deliver_response(401, "vous ne pouvez pas liker votre propre post", NULL);
                     break;
                 }
                 if($postedDataTab["like"] == 1) {
-                    likerUnPost($postedDataTab["id_post"], $jwt_token);
-                    deliver_response(200, "post liké !", NULL);
+                    $checkSuccess = likerUnPost($postedDataTab["id_post"], $jwt_token);
+                    if($checkSuccess) {
+                        deliver_response(200, "post liké !", NULL);
+                    } else {
+                        break;
+                    }
                 } else {
-                    dislikerUnPost($postedDataTab["id_post"], $jwt_token);
-                    deliver_response(200, "post disliké !", NULL);
+                    $checkSuccess = dislikerUnPost($postedDataTab["id_post"], $jwt_token);
+                    if($checkSuccess) {
+                        deliver_response(200, "post disliké !", NULL);
+                    } else {
+                        break;
+                    }
                 }
                 break;
             }
 
             //modifier le contenu d'un post
             if(!empty($postedDataTab["contenu"])) {
-                if(!is_publisher_of_this_post($jwt_token, $postedDataTab['id_post']) || !is_moderateur($jwt_token)) {
-                    deliver_response(401, "Vous n'etes pas autorisé à modifier ce post");
+                if(!is_publisher_of_this_post($jwt_token, $postedDataTab['id_post']) && !is_moderateur($jwt_token)) {
+                    deliver_response(401, "Vous n'etes pas autorisé à modifier ce post", NULL);
                     break;
                 }
-
+                modifierPost($postedDataTab["id_post"], $postedDataTab["contenu"]);
+                deliver_response(200, "Le post à bien été mis à jour", NULL);
             }
 
             break;
@@ -126,14 +138,17 @@
         return get_role_utilisateur($jwt_token) == "publisher";
     }
 
+    //Like un post, return "true" si l'opération à réussie.
     function likerUnPost($id_post, $jwt_token) {
         $id_utilisateur = getIdUserFromUsername(get_username($jwt_token));
         if(estDejaLikeOuDislike($id_utilisateur, $id_post)) {
             deliver_response(405, "Vous avez déja liker ou diliker ce post", NULL);
+            return false;
         } else {
             try {
                 $req = createDB()->prepare('INSERT INTO liker (Id_Utilisateur, Id_Post) VALUES (?, ?)');
                 $req->execute(array($id_utilisateur, $id_post));
+                return true;
             }
             catch (Exception $e) {
                 die('Erreur : ' . $e->getMessage());
@@ -141,11 +156,25 @@
         }
     }
 
-    function idPostExist($id_post) {
-        $req = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
-        $req->execute(array($id_post));
-        $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
+    function modifierPost($id_post, $nouveau_contenu) {
+        try {
+            $req = createDB()->prepare('UPDATE post set contenu = ? WHERE id_post = ?');
+            $req->execute(array($nouveau_contenu, $id_post));
+        } 
+        catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
+    }
 
+    function idPostExist($id_post) {
+        try {
+            $req = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
+            $req->execute(array($id_post));
+            $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
+        } 
+        catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
         return (count($reponseBD) != 0);
     }
 
@@ -166,6 +195,7 @@
         }
     }
 
+    //Like un post, return "true" si l'opération à réussie.
     function dislikerUnPost($id_post, $jwt_token) {
         $id_utilisateur = getIdUserFromUsername(get_username($jwt_token));
         if(estDejaLikeOuDislike($id_utilisateur, $id_post)) {
@@ -207,7 +237,6 @@
         $payload = base64_decode($tokenParts[1]);
         $decodedPayload = json_decode($payload, true);
         $roleUtilisateur = $decodedPayload['role_utilisateur'];
-        deliver_response(200,$roleUtilisateur,$roleUtilisateur);
 
         return $roleUtilisateur;
     }
@@ -352,7 +381,7 @@
             $select = createDB()->prepare('SELECT Id_Utilisateur FROM utilisateur as u WHERE u.nom=?');
             $select->execute(array($username));
             $id = $select->fetchColumn();
-            return intval($id['Id_Utilisateur']);
+            return intval($id[0]);
         } catch(Exception $e) {
             echo"erreur";
             die('Erreur:'.$e->getMessage());
