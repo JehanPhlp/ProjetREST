@@ -23,7 +23,8 @@
             } else if(empty($_GET)){
                 $posts = getPosts($jwt_token);
             } else{
-                deliver_response(415,"Argument inattendu: attendu id,username ou rien",null);
+                deliver_response(415,"Argument inattendu: attendu id/username/rien",null);
+                break;
             }
             deliver_response(200,"affichage de posts",$posts);
             break;
