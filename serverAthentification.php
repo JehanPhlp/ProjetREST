@@ -1,10 +1,4 @@
 <?php
-    /**
-     * Login moderator :    moderator_user      moderator_mdp
-     * Login publisher :    publisher_user      publisher_mdp
-     * Login publisher2 :   publisher2_user     publisher2_mdp
-     */
-
     require_once("login.php");
     require("jwt_utils.php");
 
@@ -27,7 +21,7 @@
             $postedData = file_get_contents('php://input');
             $postedDataTab = json_decode($postedData, true);
             $username = $postedDataTab['username'];
-            $mdp = $postedDataTab['mot_de_passe'];  
+            $mdp = $postedDataTab['mot_de_passe'];
 
             $req = $linkpdo->prepare('SELECT role_utilisateur FROM utilisateur WHERE nom = ? and mot_de_passe = ?');
             $req->execute(array($username, hash("sha256",$mdp)));
