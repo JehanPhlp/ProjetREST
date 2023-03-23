@@ -15,12 +15,15 @@
 
         case "GET" :
             $posts = [];
+            
             if (!empty($_GET['username'])){
                 $posts = getPostFromUser($_GET['username'],$jwt_token);
             } else if (!empty($_GET['id'])){
                 $posts = getPost($_GET['id'],$jwt_token);
-            } else {
+            } else if(empty($_GET)){
                 $posts = getPosts($jwt_token);
+            } else{
+                deliver_response(415,"Argument inatendu : "+$_GET,null)
             }
             deliver_response(200,"affichage de posts",$posts);
             break;
