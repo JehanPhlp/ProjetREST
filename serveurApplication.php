@@ -50,11 +50,11 @@
             }
 
             // Verificationde l'id du post
-            if (empty($postedDataTab['id_post'])){
-                deliver_response(422, "missing parameter : id_post", NULL);
+            if (empty($postedDataTab['Id_Post'])){
+                deliver_response(422, "missing parameter : Id_Post", NULL);
                 break;
             }
-            if (!idPostExist($postedDataTab['id_post'])) {
+            if (!idPostExist($postedDataTab['Id_Post'])) {
                 deliver_response(404, "Ce post n'existe pas", NULL);
                 break;
             }
@@ -72,19 +72,19 @@
                     deliver_response(401, "Vous n'etes pas autorisé à liker ce post", NULL);
                     break;
                 }
-                if(is_publisher_of_this_post($jwt_token, $postedDataTab['id_post'])) {
+                if(is_publisher_of_this_post($jwt_token, $postedDataTab['Id_Post'])) {
                     deliver_response(401, "vous ne pouvez pas liker votre propre post", NULL);
                     break;
                 }
                 if($postedDataTab["like"] == 1) {
-                    $checkSuccess = likerUnPost($postedDataTab["id_post"], $jwt_token);
+                    $checkSuccess = likerUnPost($postedDataTab["Id_Post"], $jwt_token);
                     if($checkSuccess) {
                         deliver_response(200, "post liké !", NULL);
                     } else {
                         break;
                     }
                 } else {
-                    $checkSuccess = dislikerUnPost($postedDataTab["id_post"], $jwt_token);
+                    $checkSuccess = dislikerUnPost($postedDataTab["Id_Post"], $jwt_token);
                     if($checkSuccess) {
                         deliver_response(200, "post disliké !", NULL);
                     } else {
@@ -96,11 +96,11 @@
 
             //modifier le contenu d'un post
             if(!empty($postedDataTab["contenu"])) {
-                if(!is_publisher_of_this_post($jwt_token, $postedDataTab['id_post']) && !is_moderateur($jwt_token)) {
+                if(!is_publisher_of_this_post($jwt_token, $postedDataTab['Id_Post']) && !is_moderateur($jwt_token)) {
                     deliver_response(401, "Vous n'etes pas autorisé à modifier ce post", NULL);
                     break;
                 }
-                modifierPost($postedDataTab["id_post"], $postedDataTab["contenu"]);
+                modifierPost($postedDataTab["Id_Post"], $postedDataTab["contenu"]);
                 deliver_response(200, "Le post à bien été mis à jour", NULL);
             }
 
@@ -111,22 +111,22 @@
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
-            if (empty($_GET['id_post'])){
-                deliver_response(422, "missing parameter : id_post", NULL);
+            if (empty($_GET['Id_Post'])){
+                deliver_response(422, "missing parameter : Id_Post", NULL);
                 break;
             }
-            if (!idPostExist($postedDataTab['id_post'])) {
+            if (!idPostExist($postedDataTab['Id_Post'])) {
                 deliver_response(404, "Ce post n'existe pas", NULL);
                 break;
             }
-            if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['id_post'])) {
+            if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['Id_Post'])) {
                 deliver_response(401, "vous n'etes pas autorisé à supprimer ce post",null);
                 break;
             }            
 
             //suppression du post
-            $req = createDB()->prepare('DELETE from post where id_Post = ?');
-            $req->execute(array($_GET['id_post']));
+            $req = createDB()->prepare('DELETE from post where Id_Post = ?');
+            $req->execute(array($_GET['Id_Post']));
         
             deliver_response(200, "Post correctement supprimé", NULL);
             break;
@@ -144,15 +144,15 @@
     }
 
     //Like un post, return "true" si l'opération à réussie.
-    function likerUnPost($id_post, $jwt_token) {
+    function likerUnPost($Id_Post, $jwt_token) {
         $id_utilisateur = getIdUserFromUsername(get_username($jwt_token));
-        if(estDejaLikeOuDislike($id_utilisateur, $id_post)) {
+        if(estDejaLikeOuDislike($id_utilisateur, $Id_Post)) {
             deliver_response(405, "Vous avez déja liker ou diliker ce post", NULL);
             return false;
         } else {
             try {
                 $req = createDB()->prepare('INSERT INTO liker (Id_Utilisateur, Id_Post) VALUES (?, ?)');
-                $req->execute(array($id_utilisateur, $id_post));
+                $req->execute(array($id_utilisateur, $Id_Post));
                 return true;
             }
             catch (Exception $e) {
@@ -161,20 +161,20 @@
         }
     }
 
-    function modifierPost($id_post, $nouveau_contenu) {
+    function modifierPost($Id_Post, $nouveau_contenu) {
         try {
-            $req = createDB()->prepare('UPDATE post set contenu = ? WHERE id_post = ?');
-            $req->execute(array($nouveau_contenu, $id_post));
+            $req = createDB()->prepare('UPDATE post set contenu = ? WHERE Id_Post = ?');
+            $req->execute(array($nouveau_contenu, $Id_Post));
         } 
         catch (Exception $e) {
             die('Erreur : ' . $e->getMessage());
         }
     }
 
-    function idPostExist($id_post) {
+    function idPostExist($Id_Post) {
         try {
             $req = createDB()->prepare('SELECT * FROM post WHERE Id_Post = ?');
-            $req->execute(array($id_post));
+            $req->execute(array($Id_Post));
             $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (Exception $e) {
@@ -183,14 +183,14 @@
         return (count($reponseBD) != 0);
     }
 
-    function estDejaLikeOuDislike($id_utilisateur, $id_post) {
+    function estDejaLikeOuDislike($id_utilisateur, $Id_Post) {
         try {
             $req = createDB()->prepare('SELECT * FROM liker WHERE Id_Utilisateur = ? AND Id_Post = ?');
-            $req->execute(array($id_utilisateur, $id_post));
+            $req->execute(array($id_utilisateur, $Id_Post));
             $reponseBDLike = $req->fetchAll(PDO::FETCH_ASSOC);
 
             $req = createDB()->prepare('SELECT * FROM disliker WHERE Id_Utilisateur = ? AND Id_Post = ?');
-            $req->execute(array($id_utilisateur, $id_post));
+            $req->execute(array($id_utilisateur, $Id_Post));
             $reponseBDDislike = $req->fetchAll(PDO::FETCH_ASSOC);
 
             return(count($reponseBDDislike) != 0 || count($reponseBDLike) != 0);
@@ -201,14 +201,14 @@
     }
 
     //Like un post, return "true" si l'opération à réussie.
-    function dislikerUnPost($id_post, $jwt_token) {
+    function dislikerUnPost($Id_Post, $jwt_token) {
         $id_utilisateur = getIdUserFromUsername(get_username($jwt_token));
-        if(estDejaLikeOuDislike($id_utilisateur, $id_post)) {
+        if(estDejaLikeOuDislike($id_utilisateur, $Id_Post)) {
             deliver_response(405, "Vous avez déja liker ou diliker ce post", NULL);
         } else {
             try {
                 $req = createDB()->prepare('INSERT INTO disliker (Id_Utilisateur, Id_Post) VALUES (?, ?)');
-                $req->execute(array($id_utilisateur, $id_post));
+                $req->execute(array($id_utilisateur, $Id_Post));
             }
             catch (Exception $e) {
                 die('Erreur : ' . $e->getMessage());
@@ -216,7 +216,7 @@
         }
     }
 
-    function is_publisher_of_this_post($jwt_token, $id_post) {
+    function is_publisher_of_this_post($jwt_token, $Id_Post) {
         if(!is_publisher($jwt_token)) {
             return false;
         }
@@ -226,7 +226,7 @@
         
         try {
             $req = createDB()->prepare('SELECT p.id_utilisateur FROM utilisateur u, post p WHERE u.id_utilisateur = p.id_utilisateur AND u.nom = ? AND p.Id_Post = ?');
-            $req->execute(array($username, $id_post));
+            $req->execute(array($username, $Id_Post));
             $reponseBD = $req->fetchAll(PDO::FETCH_ASSOC);
         }
         catch (Exception $e) {
@@ -310,7 +310,7 @@
                                                 LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
                                                 LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
                                                 LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
-                                                JOIN post p ON p.Id_Post = ?
+                                                WHERE p.Id_Post = ?
                                                 GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else if(is_publisher($jwt_token)){
@@ -320,7 +320,7 @@
                                                     FROM post p
                                                     LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                     LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
-                                                    JOIN post p ON p.Id_Post = ?
+                                                    WHERE p.Id_Post = ?
                                                     GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else{
@@ -338,25 +338,25 @@
     function getPostFromUser($username,$jwt_token){
         try{
             if(is_moderateur($jwt_token)){
-                $select = createDB()->prepare('SELECT p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication,
+                $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                                 COUNT(l.Id_Post) AS likes, GROUP_CONCAT(DISTINCT ul.nom) AS users_likes,
                                                 COUNT(d.Id_Post) AS dislikes, GROUP_CONCAT(DISTINCT ud.nom) AS users_dislikes
                                                 FROM post p
-                                                LEFT JOIN liker l ON p.Id_post = l.Id_Post
+                                                LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                 LEFT JOIN utilisateur ul ON l.Id_utilisateur = ul.Id_utilisateur
-                                                LEFT JOIN disliker d ON p.Id_post = d.Id_Post
+                                                LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
                                                 LEFT JOIN utilisateur ud ON d.Id_utilisateur = ud.Id_utilisateur
-                                                JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
-                                                GROUP BY p.Id_post, p.Id_utilisateur, p.contenu, p.date_publication;');
+                                                LEFT JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
+                                                GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else if(is_publisher($jwt_token)){
                     $select = createDB()->prepare('SELECT p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication,
                                                     COUNT(l.Id_Post) AS likes,
                                                     COUNT(d.Id_Post) AS dislikes
-                                                    FROM post p,utilisateur
+                                                    FROM post pj,
                                                     LEFT JOIN liker l ON p.Id_Post = l.Id_Post
                                                     LEFT JOIN disliker d ON p.Id_Post = d.Id_Post
-                                                    JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
+                                                    LEFT JOIN utilisateur u ON p.Id_utilisateur = u.Id_utilisateur AND u.nom = ?
                                                     GROUP BY p.Id_Post, p.Id_utilisateur, p.contenu, p.date_publication;');
                 }
                 else{
