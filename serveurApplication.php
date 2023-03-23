@@ -34,6 +34,10 @@
                 deliver_response(401, "Identification requise", NULL);
                 break;
             }
+            if(!is_publisher($jwt_token)){
+                deliver_response(401, "Seul les publishers peuvent publier", NULL);
+                break;
+            }
             creatPost(get_username($jwt_token),json_decode($postedData, true)['contenu']);
             deliver_response(201, "post cree", NULL);
             break;
@@ -56,6 +60,7 @@
             }
             if (empty($postedDataTab["like"]) && empty($postedDataTab["contenu"])) {
                 deliver_response(422, "missing parameter : like or contenu", NULL);
+                break;
             }
 
             //procedure pour liker ou disliker un post
