@@ -39,6 +39,9 @@
                 deliver_response(401, "Seul les publishers peuvent publier", NULL);
                 break;
             }
+            if(json_decode($postedData, true)['contenu']==null){
+                deliver_response(422, "missing parameter : contenu", NULL);
+            }
             creatPost(get_username($jwt_token),json_decode($postedData, true)['contenu']);
             deliver_response(200, "post cree", NULL);
             break;
@@ -107,12 +110,14 @@
 
             break;
         case "DELETE":
+            $postedData = file_get_contents('php://input');
+            $postedDataTab = json_decode($postedData, true);
             //Supprimer un post
             if(!is_jwt_valid($jwt_token)) {
                 deliver_response(401, "token invalide", NULL);
                 break;
             }
-            if (empty($_GET['Id_Post'])){
+            if (empty($postedDataTab['Id_Post'])){
                 deliver_response(422, "missing parameter : Id_Post", NULL);
                 break;
             }
@@ -120,14 +125,14 @@
                 deliver_response(404, "Ce post n'existe pas", NULL);
                 break;
             }
-            if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $_GET['Id_Post'])) {
+            if(!is_moderateur($jwt_token) && !is_publisher_of_this_post($jwt_token, $postedDataTab['Id_Post'])) {
                 deliver_response(401, "vous n'etes pas autorisé à supprimer ce post",null);
                 break;
             }            
 
             //suppression du post
             $req = createDB()->prepare('DELETE from post where Id_Post = ?');
-            $req->execute(array($_GET['Id_Post']));
+            $req->execute(array($postedDataTab['Id_Post']));
         
             deliver_response(200, "Post correctement supprimé", NULL);
             break;
