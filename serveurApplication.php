@@ -131,7 +131,11 @@
             }            
 
             //suppression du post
-            $req = createDB()->prepare('DELETE from post where Id_Post = ?');
+            $req = createDB()->prepare('DELETE FROM liker WHERE Id_Post = ?');
+            $req->execute(array($postedDataTab['Id_Post']));
+            $req = createDB()->prepare('DELETE FROM liker WHERE Id_Post = ?');
+            $req->execute(array($postedDataTab['Id_Post']));
+            $req = createDB()->prepare('DELETE FROM post WHERE Id_Post = ?');
             $req->execute(array($postedDataTab['Id_Post']));
         
             deliver_response(200, "Post correctement supprimé", NULL);
