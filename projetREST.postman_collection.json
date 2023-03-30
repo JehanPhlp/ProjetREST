@@ -1,0 +1,487 @@
+{
+	"info": {
+		"_postman_id": "92d4cce0-95ad-4f43-b1ed-3601fce56a50",
+		"name": "projetREST",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25741210"
+	},
+	"item": [
+		{
+			"name": "connexion publisher serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"publisher_user\",\r\n    \"mot_de_passe\": \"publisher_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "connexion publisher2 serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"publisher2_user\",\r\n    \"mot_de_passe\": \"publisher2_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "connexion publisher3 serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"publisher3_user\",\r\n    \"mot_de_passe\": \"publisher3_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "connexion publisher4 serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"publisher4_user\",\r\n    \"mot_de_passe\": \"publisher4_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "connexion moderator serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"moderator_user\",\r\n    \"mot_de_passe\": \"moderator_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "connexion moderator2 serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"moderator2_user\",\r\n    \"mot_de_passe\": \"moderator2_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "connexion mauvais login serveur authentification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"moderator_user\",\r\n    \"mot_de_passe\": \"mauvais_mdp\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serverAthentification.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serverAthentification.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get all posts",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get posts of publisher2_user",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php?username=publisher2_user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "publisher2_user"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get one post with id",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php?id_post=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					],
+					"query": [
+						{
+							"key": "id_post",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "publication d'un post",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"contenu\": \"ceci est un contenu de test\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "modification d'un post",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id_post\": 3,\r\n    \"contenu\": \"ceci est une modification du contenu\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "liker un post",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id_post\": 3,\r\n    \"like\": 1\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "disliker un post",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id_post\": 3,\r\n    \"like\": -1\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "supprimer un post",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1vZGVyYXRvcl91c2VyIiwibW90X2RlX3Bhc3NlIjoibW9kZXJhdG9yX21kcCIsInJvbGVfdXRpbGlzYXRldXIiOiJtb2RlcmF0b3IiLCJleHAiOjE2ODAxNjk3OTJ9.0CJNvf0QuYOvvpyGPjYMWS8ucfQakhYHMz5YAgrdBrc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id_Post\": 3\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/projetREST/serveurApplication.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"projetREST",
+						"serveurApplication.php"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
