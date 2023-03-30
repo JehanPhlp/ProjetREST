@@ -40,7 +40,7 @@
                 break;
             }
             creatPost(get_username($jwt_token),json_decode($postedData, true)['contenu']);
-            deliver_response(201, "post cree", NULL);
+            deliver_response(200, "post cree", NULL);
             break;
         case "PUT" :
             $postedData = file_get_contents('php://input');
@@ -132,7 +132,7 @@
             deliver_response(200, "Post correctement supprimé", NULL);
             break;
         default :
-            deliver_response(405, "Methode non implemenee", NULL);
+            deliver_response(405, "Methode non implementee", NULL);
             break;
     }
 
